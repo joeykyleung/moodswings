@@ -7,7 +7,7 @@ from urllib.parse import urlencode
 import os
 import random
 from dotenv import load_dotenv
-from trying import Optional
+from typing import Optional
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
@@ -94,38 +94,7 @@ async def set_mood(mood: str):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-# def get_song_for_mood(mood):
-#     global access_token
-#     if not access_token:
-#         raise Exception("Access token is not available")
-
-#     headers = {
-#         'Authorization': f'Bearer {access_token}'
-#     }
-
-#     # Get user's top artists
-#     response = requests.get(API_BASE_URL + 'me/top/artists', headers=headers)
-#     if response.status_code != 200:
-#         raise Exception("Failed to get top artists")
-#     top_artists = response.json()['items']
-    
-#     # Select a random artist
-#     random_artist = random.choice(top_artists)
-
-#     # Get top tracks of the selected artist
-#     artist_id = random_artist['id']
-#     response = requests.get(API_BASE_URL + f'artists/{artist_id}/top-tracks?country=US', headers=headers)
-#     if response.status_code != 200:
-#         raise Exception("Failed to get artist's top tracks")
-#     top_tracks = response.json()['tracks']
-    
-#     # Select a random track - for now, mood is not used to filter tracks
-#     random_track = random.choice(top_tracks)
-#     print (random_track['external_urls']['spotify'])
-#     return random_track['external_urls']['spotify']
-
-
-def select_tracks(mood: str) -> Optional[str]:
+def get_song_for_mood(mood):
     global access_token
     if not access_token:
         raise Exception("Access token is not available")
@@ -134,50 +103,39 @@ def select_tracks(mood: str) -> Optional[str]:
         'Authorization': f'Bearer {access_token}'
     }
 
-    try:
-        # Get user's top artists
-        response = requests.get(API_BASE_URL + 'me/top/artists', headers=headers)
-        response.raise_for_status()
-        top_artists = response.json()['items']
+    # Get user's top artists
+    response = requests.get(API_BASE_URL + 'me/top/artists', headers=headers)
+    if response.status_code != 200:
+        raise Exception("Failed to get top artists")
+    top_artists = response.json()['items']
+    
+    # Select a random artist
+    random_artist = random.choice(top_artists)
 
-        # Select a random artist
-        random_artist = random.choice(top_artists)
+    # Get top tracks of the selected artist
+    artist_id = random_artist['id']
+    response = requests.get(API_BASE_URL + f'artists/{artist_id}/top-tracks?country=US', headers=headers)
+    if response.status_code != 200:
+        raise Exception("Failed to get artist's top tracks")
+    top_tracks = response.json()['tracks']
 
-        # Get top tracks of the selected artist
-        artist_id = random_artist['id']
-        response = requests.get(f'{API_BASE_URL}artists/{artist_id}/top-tracks?country=US', headers=headers)
-        response.raise_for_status()
-        top_tracks = response.json()['tracks']
-
-    except requests.RequestException as e:
-        print(f"Failed to fetch data from Spotify: {e}")
-        return None
-
-    top_tracks_uri = [track['uri'] for track in top_tracks]
-
-    # Select a track that matches the mood
-    selected_track_uri = select_tracks(API_BASE_URL, headers, top_tracks_uri, mood)
-    return selected_track_uri
-
-def get_song_for_mood(api_url: str, headers: dict, top_tracks_uri: list, mood: str) -> Optional[str]:
-    print("...selecting tracks")
-
+    # Filter top_tracks with mood
     mood_features = MOOD_FEATURES.get(mood, {"valence": (0, 1), "energy": (0, 1)})
     valence_range = mood_features["valence"]
     energy_range = mood_features["energy"]
 
     matching_tracks = []
 
-    for track_uri in top_tracks_uri:
-        track_id = track_uri.split(":")[-1]
+    for track in top_tracks:
+        track_id = track['id']
         try:
-            response = requests.get(f"{api_url}audio-features/{track_id}", headers=headers)
+            response = requests.get(API_BASE_URL + f'audio-features/{track_id}', headers=headers)
             response.raise_for_status()
 
             track_features = response.json()
             if (valence_range[0] <= track_features["valence"] <= valence_range[1] and
                     energy_range[0] <= track_features["energy"] <= energy_range[1]):
-                matching_tracks.append(track_uri)
+                matching_tracks.append(track_id)
 
         except requests.RequestException:
             continue
@@ -185,11 +143,86 @@ def get_song_for_mood(api_url: str, headers: dict, top_tracks_uri: list, mood: s
     if matching_tracks:
         print ("mood: ", mood)
         track = random.choice(matching_tracks)
-        print (track)
-        return track
+        print (track['id'])
+        return track['id']
     else:
         # If no matching tracks, return a random track from the list
-        return random.choice(top_tracks_uri) if top_tracks_uri else None
+        track = random.choice(top_tracks)
+        print (track['id'])
+        return track['id']
+        # return  if top_tracks else None
+    
+    # # Select a random track - for now, mood is not used to filter tracks
+    # random_track = random.choice(top_tracks)
+    # print (random_track['id'])
+    # return random_track['id']
+
+
+# def select_tracks(mood: str) -> Optional[str]:
+#     global access_token
+#     if not access_token:
+#         raise Exception("Access token is not available")
+
+#     headers = {
+#         'Authorization': f'Bearer {access_token}'
+#     }
+
+#     try:
+#         # Get user's top artists
+#         response = requests.get(API_BASE_URL + 'me/top/artists', headers=headers)
+#         response.raise_for_status()
+#         top_artists = response.json()['items']
+
+#         # Select a random artist
+#         random_artist = random.choice(top_artists)
+
+#         # Get top tracks of the selected artist
+#         artist_id = random_artist['id']
+#         response = requests.get(f'{API_BASE_URL}artists/{artist_id}/top-tracks?country=US', headers=headers)
+#         response.raise_for_status()
+#         top_tracks = response.json()['tracks']
+
+#     except requests.RequestException as e:
+#         print(f"Failed to fetch data from Spotify: {e}")
+#         return None
+
+#     top_tracks_uri = [track['uri'] for track in top_tracks]
+
+#     # Select a track that matches the mood
+#     selected_track_uri = select_tracks(API_BASE_URL, headers, top_tracks_uri, mood)
+#     return selected_track_uri
+
+# def get_song_for_mood(api_url: str, headers: dict, top_tracks_uri: list, mood: str) -> Optional[str]:
+#     print("...selecting tracks")
+
+#     mood_features = MOOD_FEATURES.get(mood, {"valence": (0, 1), "energy": (0, 1)})
+#     valence_range = mood_features["valence"]
+#     energy_range = mood_features["energy"]
+
+#     matching_tracks = []
+
+#     for track_uri in top_tracks_uri:
+#         track_id = track_uri.split(":")[-1]
+#         try:
+#             response = requests.get(f"{api_url}audio-features/{track_id}", headers=headers)
+#             response.raise_for_status()
+
+#             track_features = response.json()
+#             if (valence_range[0] <= track_features["valence"] <= valence_range[1] and
+#                     energy_range[0] <= track_features["energy"] <= energy_range[1]):
+#                 matching_tracks.append(track_uri)
+
+#         except requests.RequestException:
+#             continue
+
+#     if matching_tracks:
+#         print ("mood: ", mood)
+#         track = random.choice(matching_tracks)
+#         print (track)
+#         return track
+#     else:
+#         # If no matching tracks, return a random track from the list
+#         return random.choice(top_tracks_uri) if top_tracks_uri else None
 
 
 
