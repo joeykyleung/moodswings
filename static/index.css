@@ -46,3 +46,7 @@ button {
     cursor: pointer;
     font-size: 16px;
 }
+
+canvas {
+    position: absolute;
+}
