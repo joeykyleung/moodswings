@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Face expression music</title>
+        <link rel="stylesheet" href="/static/index.css" />
+        <script defer src="/static/face-api.min.js"></script>
+        <script defer src="/static/script.js"></script>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Welcome to the Book Repository</h1>
+            <video id="video" width="720" height="560" autoplay muted></video>
+            <form action="/books" method="get">
+                <label for="genre">Enter Book Genre:</label>
+                <input
+                    type="text"
+                    id="genre"
+                    name="genre"
+                    placeholder="e.g. Fiction"
+                />
+                <button type="submit">Search</button>
+            </form>
+        </div>
+    </body>
+</html>
