@@ -72,8 +72,7 @@ video.addEventListener('play', () => {
       .catch(error => {
         console.error('Error:', error);
       });
-    }, 10000);
-  
       // Reset the frequency hashmap
       expressionFrequency.clear();
+    }, 10000);
 })
