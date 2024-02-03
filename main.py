@@ -14,7 +14,7 @@ async def root(request: Request):
 
 
 @app.post('/mood')
-async def set_mood(mood: str = Query(..., description="The mood parameter in the query")):
+async def set_mood(mood: str):
     print(mood)
     # Do something with the mood parameter
     return {"message": f'Mood set successfully to {mood}'}
