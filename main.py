@@ -6,17 +6,16 @@ import jsonify
 import requests
 from urllib.parse import urlencode
 import os
+from dotenv import load_dotenv
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+load_dotenv()  # Load variables from .env file
 
-CLIENT_ID = '6f3ac7df2b7a46bdb40b00e2bae532aa'
-CLIENT_SECRET = '242588f3f17b4d7387231a17e9ee754f'
-
-# CLIENT_SECRET = os.getenv('CLIENT_SECRET')
-# CLIENT_ID = os.getenv('CLIENT_ID')
+CLIENT_SECRET = os.getenv('CLIENT_SECRET')
+CLIENT_ID = os.getenv('CLIENT_ID')
 
 random_key = os.getenv('SESSION_KEY')
 
