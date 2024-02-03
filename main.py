@@ -66,7 +66,13 @@ async def callback(request: Request):
         token_info = response.json()
         # session['access_token'] = token_info['access_token']
 
-        return RedirectResponse('/face-rec')
+        return RedirectResponse('/intermediate')
+    
+
+@app.get('/intermediate', response_class=HTMLResponse)
+async def intermediate(request: Request):
+    return templates.TemplateResponse("intermediate.html", {"request": request})
+
 
 @app.get('/face-rec', response_class=HTMLResponse)
 async def root(request: Request):

@@ -1,0 +1,23 @@
+{% extends "layout.html" %} 
+
+{% block css %}
+<link rel="stylesheet" href="/static/index.css" />
+{% endblock %} 
+
+{% block title %}MoodSwings{% endblock %} 
+
+{% block body %}
+<div class="container">
+    <h1>Your top artists/genres</h1>
+    <ul>
+        <li>1. Jazz</li>
+        <li>2. rock</li>
+        <li>3. kpop</li>
+        <li>4. cpop</li>
+    </ul>
+    <form action="/face-rec" method="get">
+        <p>Get your song/playlist based on your mood!</p>
+        <button type="submit">Search</button>
+    </form>
+</div>
+{% endblock %}
