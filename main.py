@@ -128,43 +128,21 @@ def get_song_for_mood(mood):
         if feature_response.status_code != 200:
             raise Exception("Failed to get track audio features")
         track_features = feature_response.json()
-        if (song_matches(mood, track_features)):
+        valence = track_features['valence']
+        energy = track_features['energy']
+        if mood == 'neutral' and 0.4 <= valence <= 0.7:
             matching_tracks.append(track_id)
-        # valence = track_features['valence']
-        # print(valence)
+        elif mood == 'happy' and 0.6 <= valence <= 0.9:
+            matching_tracks.append(track_id)
+        elif mood == 'sad' and 0.2<= valence <= 0.5:
+            matching_tracks.append(track_id)
+        elif mood == 'surprised' and 0.5 <= valence <= 0.8:
+            matching_tracks.append(track_id)
 
-
-    # random_track = random.choice(top_tracks)
     random_track = random.choice(matching_tracks)
-    print(random_track['id'], mood)
-    return random_track['id']
+    print(random_track, mood)
+    return random_track
 
-
-    # "neutral": {"valence": (0.3, 0.7), "energy": (0.3, 0.7)},
-    # "fearful": {"valence": (0, 0.4), "energy": (0.2, 0.6)},
-    # "happy": {"valence": (0.7, 1.0), "energy": (0.7, 1.0)},
-    # "sad": {"valence": (0, 0.3), "energy": (0, 0.3)},
-    # "angry": {"valence": (0, 0.5), "energy": (0.7, 1.0)},
-    # "disgusted": {"valence": (0, 0.4), "energy": (0.4, 0.7)},
-    # "surprised": {"valence": (0.5, 1.0), "energy": (0.5, 1.0)}
-
-def song_matches(mood, track_features):
-    valence = track_features['valence']
-    energy = track_features['energy']
-    # danceability = track_features['danceability']
-    if mood == "neutral":
-        if (0.3 <= valence <= 0.7) and (0.3 <= energy <= 0.7):
-            return True
-    elif mood == "fearful":
-        if (0 <= valence <= 0.4) and (0.2 <= energy <= 0.6):
-            return True
-    elif mood == "happy":
-        if valence >= 0.7 and valence <= 1.0 and energy  >= 0.2 and energy <= 0.6:
-            return True
-    return False
-        
-
-    
     # # Select a random track - for now, mood is not used to filter tracks
     # random_track = random.choice(top_tracks)
     # print (random_track['id'])
