@@ -119,38 +119,21 @@ def get_song_for_mood(mood):
         raise Exception("Failed to get artist's top tracks")
     top_tracks = response.json()['tracks']
 
-    # Filter top_tracks with mood
-    mood_features = MOOD_FEATURES.get(mood, {"valence": (0, 1), "energy": (0, 1)})
-    valence_range = mood_features["valence"]
-    energy_range = mood_features["energy"]
-
+    # Filter tracks based on mood
     matching_tracks = []
 
     for track in top_tracks:
         track_id = track['id']
-        try:
-            response = requests.get(API_BASE_URL + f'audio-features/{track_id}', headers=headers)
-            response.raise_for_status()
+        feature_response = requests.get(API_BASE_URL + f'audio-features/{track_id}', headers=headers)
+        if feature_response.status_code != 200:
+            raise Exception("Failed to get track audio features")
+        track_features = feature_response.json()
+        print(track_features)
 
-            track_features = response.json()
-            if (valence_range[0] <= track_features["valence"] <= valence_range[1] and
-                    energy_range[0] <= track_features["energy"] <= energy_range[1]):
-                matching_tracks.append(track_id)
+    random_track = random.choice(top_tracks)
+    print(random_track['id'], mood)
+    return random_track['id']
 
-        except requests.RequestException:
-            continue
-
-    if matching_tracks:
-        print ("mood: ", mood)
-        track = random.choice(matching_tracks)
-        print (track['id'])
-        return track['id']
-    else:
-        # If no matching tracks, return a random track from the list
-        track = random.choice(top_tracks)
-        print (track['id'])
-        return track['id']
-        # return  if top_tracks else None
     
     # # Select a random track - for now, mood is not used to filter tracks
     # random_track = random.choice(top_tracks)
