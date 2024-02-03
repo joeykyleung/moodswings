@@ -47,8 +47,6 @@ async def login(request: Request):
 
 @app.get('/callback')
 async def callback(request: Request):
-    print("request parameters:")
-    print(request.query_params)
 
     if 'error' in request.query_params:
         return jsonify({"error": request.query_params['error']})
