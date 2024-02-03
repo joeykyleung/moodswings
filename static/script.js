@@ -51,13 +51,14 @@ video.addEventListener('play', () => {
     }
     console.log('Expressions recorded:', expressionFrequency);
     console.log('Highest frequency expression:', highestExpression);
-    
+
     // Send POST request to /mood endpoint
     fetch(`${serverUrl}/mood?mood=${highestExpression}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
+      mode: 'no-cors',
     })
       .then(response => {
         if (response.ok) {
