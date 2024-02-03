@@ -16,9 +16,6 @@ load_dotenv()  # Load variables from .env file
 
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 CLIENT_ID = os.getenv('CLIENT_ID')
-
-random_key = os.getenv('SESSION_KEY')
-
 REDIRECT_URI = os.environ.get('REDIRECT_URI', 'http://127.0.0.1:8000/callback')
 
 AUTH_URL = 'https://accounts.spotify.com/authorize'
