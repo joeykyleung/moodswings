@@ -22,6 +22,16 @@ AUTH_URL = 'https://accounts.spotify.com/authorize'
 TOKEN_URL = 'https://accounts.spotify.com/api/token'
 API_BASE_URL = 'https://api.spotify.com/v1/'
 
+MOOD_FEATURES = {
+    "neutral": {"valence": (0.3, 0.7), "energy": (0.3, 0.7)},
+    "fearful": {"valence": (0, 0.4), "energy": (0.2, 0.6)},
+    "happy": {"valence": (0.7, 1.0), "energy": (0.7, 1.0)},
+    "sad": {"valence": (0, 0.3), "energy": (0, 0.3)},
+    "angry": {"valence": (0, 0.5), "energy": (0.7, 1.0)},
+    "disgusted": {"valence": (0, 0.4), "energy": (0.4, 0.7)},
+    "surprised": {"valence": (0.5, 1.0), "energy": (0.5, 1.0)}
+}
+
 # Global variable to store access token
 access_token = None
 
@@ -83,7 +93,39 @@ async def set_mood(mood: str):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-def get_song_for_mood(mood):
+# def get_song_for_mood(mood):
+#     global access_token
+#     if not access_token:
+#         raise Exception("Access token is not available")
+
+#     headers = {
+#         'Authorization': f'Bearer {access_token}'
+#     }
+
+#     # Get user's top artists
+#     response = requests.get(API_BASE_URL + 'me/top/artists', headers=headers)
+#     if response.status_code != 200:
+#         raise Exception("Failed to get top artists")
+#     top_artists = response.json()['items']
+    
+#     # Select a random artist
+#     random_artist = random.choice(top_artists)
+
+#     # Get top tracks of the selected artist
+#     artist_id = random_artist['id']
+#     response = requests.get(API_BASE_URL + f'artists/{artist_id}/top-tracks?country=US', headers=headers)
+#     if response.status_code != 200:
+#         raise Exception("Failed to get artist's top tracks")
+#     top_tracks = response.json()['tracks']
+    
+#     # Select a random track - for now, mood is not used to filter tracks
+#     random_track = random.choice(top_tracks)
+#     print (random_track['external_urls']['spotify'])
+#     return random_track['external_urls']['spotify']
+
+
+
+def get_song_for_mood(mood: str) -> Optional[str]:
     global access_token
     if not access_token:
         raise Exception("Access token is not available")
@@ -103,14 +145,45 @@ def get_song_for_mood(mood):
 
     # Get top tracks of the selected artist
     artist_id = random_artist['id']
-    response = requests.get(API_BASE_URL + f'artists/{artist_id}/top-tracks?country=US', headers=headers)
+    response = requests.get(f'{API_BASE_URL}artists/{artist_id}/top-tracks?country=US', headers=headers)
     if response.status_code != 200:
         raise Exception("Failed to get artist's top tracks")
     top_tracks = response.json()['tracks']
     
-    # Select a random track - for now, mood is not used to filter tracks
-    random_track = random.choice(top_tracks)
-    print (random_track['external_urls']['spotify'])
-    return random_track['external_urls']['spotify']
+    top_tracks_uri = [track['uri'] for track in top_tracks]
+
+    # Select a track that matches the mood
+    selected_track_uri = select_tracks(API_BASE_URL, headers, top_tracks_uri, mood)
+    
+    if selected_track_uri:
+        return selected_track_uri
+    else:
+        return None
+
+def select_tracks(api_url: str, headers: dict, top_tracks_uri: list, mood: str) -> Optional[str]:
+    print("...selecting tracks")
+
+    mood_features = MOOD_FEATURES.get(mood, {"valence": (0, 1), "energy": (0, 1)})
+    valence_range = mood_features["valence"]
+    energy_range = mood_features["energy"]
+
+    matching_tracks = []
+
+    for track_uri in top_tracks_uri:
+        track_id = track_uri.split(":")[-1]
+        response = requests.get(f"{api_url}audio-features/{track_id}", headers=headers)
+        if response.status_code != 200:
+            continue
+
+        track_features = response.json()
+        if (valence_range[0] <= track_features["valence"] <= valence_range[1] and
+                energy_range[0] <= track_features["energy"] <= energy_range[1]):
+            matching_tracks.append(track_uri)
+
+    if not matching_tracks:
+        return None
+
+    return random.choice(matching_tracks)
+
 
 
