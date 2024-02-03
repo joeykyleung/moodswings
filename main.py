@@ -12,8 +12,11 @@ app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-CLIENT_SECRET = os.getenv('CLIENT_SECRET')
-CLIENT_ID = os.getenv('CLIENT_ID')
+# CLIENT_SECRET = os.getenv('CLIENT_SECRET')
+# CLIENT_ID = os.getenv('CLIENT_ID')
+
+CLIENT_ID = '6f3ac7df2b7a46bdb40b00e2bae532aa'
+CLIENT_SECRET = '242588f3f17b4d7387231a17e9ee754f'
 
 random_key = os.getenv('SESSION_KEY')
 
@@ -29,7 +32,7 @@ async def root(request: Request):
     return templates.TemplateResponse('index.html', {"request": request})
 
 
-@app.route("/login")
+@app.get("/login")
 async def login(request: Request):
     scope = 'user-read-private user-read-email user-top-read'
 
@@ -46,17 +49,18 @@ async def login(request: Request):
     return RedirectResponse(auth_url)
 
 
-@app.route('/callback')
+@app.get('/callback')
 async def callback(request: Request):
+    print("request parameters:")
     print(request.query_params)
-    redirect_url = request.url_for('index') 
-    if 'error' in request.args:
-        return jsonify({"error": request.args['error']})
+
+    if 'error' in request.query_params:
+        return jsonify({"error": request.query_params['error']})
 
     if 'code' in request.query_params:
         # get access token
         req_body = {
-            'code': request.args['code'],
+            'code': request.query_params['code'],
             'grant_type': 'authorization_code',
             'redirect_uri': REDIRECT_URI,
             'client_id': CLIENT_ID,
@@ -66,7 +70,7 @@ async def callback(request: Request):
         token_info = response.json()
         # session['access_token'] = token_info['access_token']
 
-        return RedirectResponse(redirect_url)
+        return RedirectResponse('/face-rec')
 
 @app.get('/face-rec', response_class=HTMLResponse)
 async def root(request: Request):
