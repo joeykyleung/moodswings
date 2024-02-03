@@ -7,6 +7,7 @@ from urllib.parse import urlencode
 import os
 import random
 from dotenv import load_dotenv
+from trying import Optional
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
@@ -124,8 +125,7 @@ async def set_mood(mood: str):
 #     return random_track['external_urls']['spotify']
 
 
-
-def get_song_for_mood(mood: str) -> Optional[str]:
+def select_tracks(mood: str) -> Optional[str]:
     global access_token
     if not access_token:
         raise Exception("Access token is not available")
@@ -134,33 +134,32 @@ def get_song_for_mood(mood: str) -> Optional[str]:
         'Authorization': f'Bearer {access_token}'
     }
 
-    # Get user's top artists
-    response = requests.get(API_BASE_URL + 'me/top/artists', headers=headers)
-    if response.status_code != 200:
-        raise Exception("Failed to get top artists")
-    top_artists = response.json()['items']
-    
-    # Select a random artist
-    random_artist = random.choice(top_artists)
+    try:
+        # Get user's top artists
+        response = requests.get(API_BASE_URL + 'me/top/artists', headers=headers)
+        response.raise_for_status()
+        top_artists = response.json()['items']
 
-    # Get top tracks of the selected artist
-    artist_id = random_artist['id']
-    response = requests.get(f'{API_BASE_URL}artists/{artist_id}/top-tracks?country=US', headers=headers)
-    if response.status_code != 200:
-        raise Exception("Failed to get artist's top tracks")
-    top_tracks = response.json()['tracks']
-    
+        # Select a random artist
+        random_artist = random.choice(top_artists)
+
+        # Get top tracks of the selected artist
+        artist_id = random_artist['id']
+        response = requests.get(f'{API_BASE_URL}artists/{artist_id}/top-tracks?country=US', headers=headers)
+        response.raise_for_status()
+        top_tracks = response.json()['tracks']
+
+    except requests.RequestException as e:
+        print(f"Failed to fetch data from Spotify: {e}")
+        return None
+
     top_tracks_uri = [track['uri'] for track in top_tracks]
 
     # Select a track that matches the mood
     selected_track_uri = select_tracks(API_BASE_URL, headers, top_tracks_uri, mood)
-    
-    if selected_track_uri:
-        return selected_track_uri
-    else:
-        return None
+    return selected_track_uri
 
-def select_tracks(api_url: str, headers: dict, top_tracks_uri: list, mood: str) -> Optional[str]:
+def get_song_for_mood(api_url: str, headers: dict, top_tracks_uri: list, mood: str) -> Optional[str]:
     print("...selecting tracks")
 
     mood_features = MOOD_FEATURES.get(mood, {"valence": (0, 1), "energy": (0, 1)})
@@ -171,19 +170,28 @@ def select_tracks(api_url: str, headers: dict, top_tracks_uri: list, mood: str) 
 
     for track_uri in top_tracks_uri:
         track_id = track_uri.split(":")[-1]
-        response = requests.get(f"{api_url}audio-features/{track_id}", headers=headers)
-        if response.status_code != 200:
+        try:
+            response = requests.get(f"{api_url}audio-features/{track_id}", headers=headers)
+            response.raise_for_status()
+
+            track_features = response.json()
+            if (valence_range[0] <= track_features["valence"] <= valence_range[1] and
+                    energy_range[0] <= track_features["energy"] <= energy_range[1]):
+                matching_tracks.append(track_uri)
+
+        except requests.RequestException:
             continue
 
-        track_features = response.json()
-        if (valence_range[0] <= track_features["valence"] <= valence_range[1] and
-                energy_range[0] <= track_features["energy"] <= energy_range[1]):
-            matching_tracks.append(track_uri)
+    if matching_tracks:
+        print ("mood: ", mood)
+        track = random.choice(matching_tracks)
+        print (track)
+        return track
+    else:
+        # If no matching tracks, return a random track from the list
+        return random.choice(top_tracks_uri) if top_tracks_uri else None
 
-    if not matching_tracks:
-        return None
 
-    return random.choice(matching_tracks)
 
 
 
