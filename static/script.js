@@ -26,12 +26,7 @@ function appendText(text) {
 
 function reloadIframe() {
   var iframe = document.getElementById('iframeid');
-  iframe.contentWindow.location.reload();
-}
-
-function reloadIframe() {
-  var iframe = document.getElementById('iframeid');
-  iframe.contentWindow.location.reload();
+  iframe.contentDocument.location.reload(true);
 }
 
 video.addEventListener('play', getData);
@@ -50,7 +45,7 @@ function getData() {
     canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
     // faceapi.draw.drawDetections(canvas, resizedDetections)
     // faceapi.draw.drawFaceLandmarks(canvas, resizedDetections)
-    faceapi.draw.drawFaceExpressions(canvas, resizedDetections)
+    // faceapi.draw.drawFaceExpressions(canvas, resizedDetections)
 
     // Log the detected expression and update frequency in hashmap
     if (resizedDetections && resizedDetections.length > 0) {
@@ -89,6 +84,7 @@ function getData() {
     })
       .then(response => {
         if (response.ok) {
+          console.log('Hello')
           reloadIframe();
           return response.json();
         } else {
@@ -101,6 +97,8 @@ function getData() {
       .catch(error => {
         console.error('Error:', error);
       });
+      console.log('Hello 2')
+      reloadIframe();
       // Reset the frequency hashmap
       expressionFrequency.clear();
     }, 10000);
