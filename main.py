@@ -8,6 +8,7 @@ import requests
 from urllib.parse import urlencode
 import os
 from dotenv import load_dotenv
+from playlistHandler import playlistHandler
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
@@ -32,7 +33,7 @@ async def root(request: Request):
 
 @app.get("/login")
 async def login(request: Request):
-    scope = 'user-read-private user-read-email user-top-read'
+    scope = 'user-read-private user-read-email user-top-read playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public'
 
     params = {
         'client_id': CLIENT_ID,
@@ -65,7 +66,6 @@ async def callback(request: Request):
         response = requests.post(TOKEN_URL, data=req_body)
         token_info = response.json()
         session['access_token'] = token_info['access_token']
-        print(session)
         return RedirectResponse('/intermediate')
     
 
@@ -74,15 +74,19 @@ async def intermediate(request: Request):
     if 'access_token' not in session:
         return RedirectResponse('/')
     artists, genres = await get_top_artists_and_genres(session['access_token'])
-    print(artists)
     return templates.TemplateResponse("intermediate.html", {"request": request, 
                                                             "artists": artists, 
                                                             "genres": genres})
 
-
 @app.get('/face-rec', response_class=HTMLResponse)
 async def root(request: Request):
-    return templates.TemplateResponse("face-rec.html", {"request": request})
+    id = await get_spotify_id(session['access_token'])
+    session['playlist'] = playlistHandler(headers = {"Authorization": "Bearer " + session['access_token']}, 
+                                          user_id=id)
+    await session['playlist'].get_moodswings_playlist()
+    print(session['playlist'].playlist_id)
+    return templates.TemplateResponse("face-rec.html", {"request": request, 
+                                                        'playlist_url': session['playlist'].playlist_id})
 
 
 @app.post('/mood')
@@ -93,6 +97,9 @@ async def set_mood(mood: str, request: Request):
     matching_tracks = await get_song_for_mood(session, mood)
     print(matching_tracks)
     
+    tracksUri = ['spotify:track:1ugQtcwmKOXvKAYzhjncmv','spotify:track:2xDMmUwEWZXak2gXtcLA27','spotify:track:7gcKyKP2O2RO9YwtPDgDSP','spotify:track:4cRVPfsnX1r3S3GzXRy2wt','spotify:track:6ab3CQvDlAVttThZucwGQ1','spotify:track:3Mvp94bh4vsITZ0PpN8rw0','spotify:track:3bne7Qit5AbHkX6kWDItYP','spotify:track:2mkfbff7LNN4SUbZ298AvK','spotify:track:1QNt0bhIXWu5XdlXlYI4iI','spotify:track:4bpyaPa1xruVgE2GtsYbIW']
+
+    await session['playlist'].add_songs(tracksUri)
     # Do something with the matching tracks
     return {"message": f'Mood set successfully to {mood}', "matching_tracks": matching_tracks}
 
@@ -150,7 +157,7 @@ async def get_song_for_mood(session, mood):
         return RedirectResponse('/')
 
     headers = {
-        'Authorization': f'Bearer {session['access_token']}'
+        'Authorization': f"Bearer {session['access_token']}"
     }
 
     # Get user's top artists
