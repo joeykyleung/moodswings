@@ -103,5 +103,5 @@ function getData() {
       });
       // Reset the frequency hashmap
       expressionFrequency.clear();
-    }, 1000000);
+    }, 10000);
 }

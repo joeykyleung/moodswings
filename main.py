@@ -95,11 +95,9 @@ async def set_mood(mood: str, request: Request):
         return RedirectResponse('/')
 
     matching_tracks = await get_song_for_mood(session, mood)
-    print(matching_tracks)
-    
-    tracksUri = ['spotify:track:1ugQtcwmKOXvKAYzhjncmv','spotify:track:2xDMmUwEWZXak2gXtcLA27','spotify:track:7gcKyKP2O2RO9YwtPDgDSP','spotify:track:4cRVPfsnX1r3S3GzXRy2wt','spotify:track:6ab3CQvDlAVttThZucwGQ1','spotify:track:3Mvp94bh4vsITZ0PpN8rw0','spotify:track:3bne7Qit5AbHkX6kWDItYP','spotify:track:2mkfbff7LNN4SUbZ298AvK','spotify:track:1QNt0bhIXWu5XdlXlYI4iI','spotify:track:4bpyaPa1xruVgE2GtsYbIW']
 
-    await session['playlist'].add_songs(tracksUri)
+    await session['playlist'].get_moodswings_playlist()
+    await session['playlist'].add_songs(matching_tracks)
     # Do something with the matching tracks
     return {"message": f'Mood set successfully to {mood}', "matching_tracks": matching_tracks}
 
