@@ -117,13 +117,11 @@ body {
        object-fit: cover;
     transition: transform 0.3s ease;
   }
-  @media only screen and (max-width: 990px) {
-    .hs__item__image__wrapper a {
-      pointer-events: auto;
-    }
-    .hs__item:hover .hs__item__image {
-      transform: scale(1.1);
-    }
+  .hs__item__image__wrapper a {
+    pointer-events: auto;
+  }
+  .hs__item:hover .hs__item__image {
+    transform: scale(1.1);
   }
   @media only screen and (min-width: 990px) {
     .hs__wrapper {

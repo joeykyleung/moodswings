@@ -212,8 +212,7 @@ async def get_song_for_mood(session, mood):
         params.update({
             'max_valence': 0.4,
             'min_energy': 0.6,
-            'min_loudness': -5,
-            'min_speechiness': 0.5
+            'min_loudness': -5
         })
     elif mood == 'disgusted':
         params.update({
