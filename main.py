@@ -8,6 +8,7 @@ import requests
 from urllib.parse import urlencode
 import os
 from dotenv import load_dotenv
+from playlistHandler import playlistHandler
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
@@ -32,7 +33,7 @@ async def root(request: Request):
 
 @app.get("/login")
 async def login(request: Request):
-    scope = 'user-read-private user-read-email user-top-read'
+    scope = 'user-read-private user-read-email user-top-read playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public'
 
     params = {
         'client_id': CLIENT_ID,
@@ -65,7 +66,6 @@ async def callback(request: Request):
         response = requests.post(TOKEN_URL, data=req_body)
         token_info = response.json()
         session['access_token'] = token_info['access_token']
-        print(session)
         return RedirectResponse('/intermediate')
     
 
@@ -74,22 +74,34 @@ async def intermediate(request: Request):
     if 'access_token' not in session:
         return RedirectResponse('/')
     artists, genres = await get_top_artists_and_genres(session['access_token'])
-    print(artists)
     return templates.TemplateResponse("intermediate.html", {"request": request, 
                                                             "artists": artists, 
                                                             "genres": genres})
 
-
 @app.get('/face-rec', response_class=HTMLResponse)
 async def root(request: Request):
-    return templates.TemplateResponse("face-rec.html", {"request": request})
+    id = await get_spotify_id(session['access_token'])
+    session['playlist'] = playlistHandler(headers = {"Authorization": "Bearer " + session['access_token']}, 
+                                          user_id=id)
+    await session['playlist'].get_moodswings_playlist()
+    print(session['playlist'].playlist_id)
+    return templates.TemplateResponse("face-rec.html", {"request": request, 
+                                                        'playlist_url': session['playlist'].playlist_id})
 
 
 @app.post('/mood')
-async def set_mood(mood: str):
-    print(mood)
-    # Do something with the mood parameter
-    return {"message": f'Mood set successfully to {mood}'}
+async def set_mood(mood: str, request: Request):
+    if 'access_token' not in session:
+        return RedirectResponse('/')
+
+    matching_tracks = await get_song_for_mood(session, mood)
+    print(matching_tracks)
+    
+    tracksUri = ['spotify:track:1ugQtcwmKOXvKAYzhjncmv','spotify:track:2xDMmUwEWZXak2gXtcLA27','spotify:track:7gcKyKP2O2RO9YwtPDgDSP','spotify:track:4cRVPfsnX1r3S3GzXRy2wt','spotify:track:6ab3CQvDlAVttThZucwGQ1','spotify:track:3Mvp94bh4vsITZ0PpN8rw0','spotify:track:3bne7Qit5AbHkX6kWDItYP','spotify:track:2mkfbff7LNN4SUbZ298AvK','spotify:track:1QNt0bhIXWu5XdlXlYI4iI','spotify:track:4bpyaPa1xruVgE2GtsYbIW']
+
+    await session['playlist'].add_songs(tracksUri)
+    # Do something with the matching tracks
+    return {"message": f'Mood set successfully to {mood}', "matching_tracks": matching_tracks}
 
 
 async def get_spotify_id(token):
@@ -138,3 +150,86 @@ async def get_top_artists_and_genres(token):
     top_genres = list(set(top_genres))  # remove duplicates
 
     return top_artists, top_genres
+
+
+async def get_song_for_mood(session, mood):
+    if 'access_token' not in session:
+        return RedirectResponse('/')
+
+    headers = {
+        'Authorization': f"Bearer {session['access_token']}"
+    }
+
+    # Get user's top artists
+    response = requests.get(API_BASE_URL + 'me/top/artists?limit=5', headers=headers)
+    if response.status_code != 200:
+        raise Exception("Failed to get top artists")
+    top_artists = response.json()['items']
+    artist_ids = []
+    for artist in top_artists:
+        artist_id = artist['id']
+        artist_ids.append(artist_id)
+    artist_ids_str = ','.join(artist_ids)
+
+    matching_tracks = []
+
+    params = {
+        'limit': 5,
+        'seed_artists': artist_ids_str,
+    }
+    if mood == 'neutral':
+        params.update({
+            'min_valence': 0.4,
+            'max_valence': 0.7
+        })
+    elif mood == 'happy':
+        params.update({
+            'min_valence': 0.7,
+            'min_energy': 0.55,
+            'min_danceability': 0.6
+        })
+    elif mood == 'sad':
+        params.update({
+            'max_valence': 0.3,
+            'max_energy': 0.45,
+            'max_loudness': -7,
+            'max_tempo': 95
+        })
+    elif mood == 'surprised':
+        params.update({
+            'min_valence': 0.6,
+            'max_valence': 0.8,
+            'min_energy': 0.6,
+            'max_energy': 0.8,
+            'max_danceability': 0.5
+        })
+    elif mood == 'fearful':
+        params.update({
+            'max_valence': 0.4,
+            'min_energy': 0.5,
+            'max_mode': 0
+        })
+    elif mood == 'angry':
+        params.update({
+            'max_valence': 0.4,
+            'min_energy': 0.6,
+            'min_loudness': -5,
+            'min_speechiness': 0.5
+        })
+    elif mood == 'disgusted':
+        params.update({
+            'max_valence': 0.5,
+            'min_energy': 0.5
+        })
+
+
+    track_response = requests.get(API_BASE_URL + 'recommendations', headers=headers, params=params)
+    if track_response.status_code != 200:
+        raise Exception("Failed to get recommendations")
+    recommended = track_response.json()['tracks']
+    for track in recommended:
+        track_uri = track['uri']
+        matching_tracks.append(track_uri)
+
+    print(matching_tracks)
+    return matching_tracks

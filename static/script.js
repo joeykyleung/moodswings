@@ -24,6 +24,16 @@ function appendText(text) {
   textBox.scrollTop = textBox.scrollHeight;
 }
 
+function reloadIframe() {
+  var iframe = document.getElementById('iframeid');
+  iframe.contentWindow.location.reload();
+}
+
+function reloadIframe() {
+  var iframe = document.getElementById('iframeid');
+  iframe.contentWindow.location.reload();
+}
+
 video.addEventListener('play', getData);
 
 function getData() {
@@ -79,6 +89,7 @@ function getData() {
     })
       .then(response => {
         if (response.ok) {
+          reloadIframe();
           return response.json();
         } else {
           throw new Error('POST request failed');
