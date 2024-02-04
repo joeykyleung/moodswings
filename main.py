@@ -153,7 +153,6 @@ def get_song_for_mood(mood):
 
 
     track_response = requests.get(API_BASE_URL + 'recommendations', headers=headers, params=params)
-    print(track_response)
     if track_response.status_code != 200:
         raise Exception("Failed to get recommendations")
     recommended = track_response.json()['tracks']
@@ -163,36 +162,5 @@ def get_song_for_mood(mood):
 
     print(matching_tracks)
     return matching_tracks
-
-
-    # for track in top_tracks:
-    #     track_id = track['id']
-    #     feature_response = requests.get(API_BASE_URL + f'audio-features/{track_id}', headers=headers)
-    #     print(feature_response)
-    #     if feature_response.status_code != 200:
-    #         raise Exception("Failed to get track audio features")
-    #     track_features = feature_response.json()
-    #     valence = track_features['valence']
-    #     energy = track_features['energy']
-    #     danceability = track_features['danceability']
-    #     loudness = track_features['loudness']
-    #     if mood == 'neutral' and 0.4 <= valence <= 0.7 and 0.4 <= energy <= 0.7 and 0.4 <= danceability <= 0.7:
-    #         matching_tracks.append(track_id)
-    #     elif mood == 'happy' and 0.7 <= valence and 0.5 <= energy <= 0.7 and 0.6 <= danceability:
-    #         matching_tracks.append(track_id)
-    #     elif mood == 'sad' and valence <= 0.35 and energy <= 0.4 and loudness <= -7 :
-    #         matching_tracks.append(track_id)
-    #     elif mood == 'surprised' and 0.6 <= valence <= 0.8 and 0.6 <= energy and danceability <=0.5 :
-    #         matching_tracks.append(track_id)
-    #     elif mood == 'fearful' and valence <= 0.4 and 0.5 <= energy:
-    #         matching_tracks.append(track_id)
-    #     elif mood == 'angry' and valence <= 0.4 and 0.6 <= energy and -5 <= loudness:
-    #         matching_tracks.append(track_id)
-    #     elif mood == 'disgusted' and valence <= 0.5 and 0.5 <= energy:
-    #         matching_tracks.append(track_id)
-    
-    # print(mood, matching_tracks)
-    # return matching_tracks
-
 
 
