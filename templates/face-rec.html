@@ -1,27 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Face expression music</title>
-        <link rel="stylesheet" href="/static/index.css" />
-        <script defer src="/static/face-api.min.js"></script>
-        <script defer src="/static/script.js"></script>
-    </head>
-    <body>
-        <div class="container">
-            <h1>Welcome to the Book Repository</h1>
-            <video id="video" width="720" height="560" autoplay muted></video>
-            <form action="/books" method="get">
-                <label for="genre">Enter Book Genre:</label>
-                <input
-                    type="text"
-                    id="genre"
-                    name="genre"
-                    placeholder="e.g. Fiction"
-                />
-                <button type="submit">Search</button>
-            </form>
-        </div>
-    </body>
-</html>
+{% extends "layout.html" %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/face-rec.css" />
+<script defer src="/static/face-api.min.js"></script>
+<script defer src="/static/script.js"></script>
+{% endblock %} 
+
+{% block title %}MoodSwings{% endblock %} 
+
+{% block body %}
+<video id="video" width="1" height="1" autoplay muted></video>
+    <div class="container">
+            <iframe 
+            class="iframe"
+            style="border-radius:12px" 
+            src="https://open.spotify.com/embed/playlist/1pec1asJxtedpliARI4dSV?utm_source=generator" 
+            width="100%" height="100%" 
+            frameBorder="0" allowfullscreen="" 
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+            loading="lazy">
+        </iframe>
+            <div class="sub1">
+                <div id="log1">Detected expression: </div>
+                <div id="log"></div>
+            </div>
+        
+    </div>
+{% endblock %}

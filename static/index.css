@@ -1,5 +1,5 @@
 body {
-    background-color: #f8f8f8;
+    background-color: var(--dark);
     font-family: "Arial", sans-serif;
     margin: 0;
     padding: 0;
@@ -7,46 +7,216 @@ body {
     align-items: center;
     justify-content: center;
     height: 100vh;
+    overflow: hidden;
 }
 
 .container {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    max-width: 400px;
-    width: 100%;
-    height: 60%;
+    height: 80%;
+    width: 80%;
     display: flex;
     flex-direction: column;
     justify-content: space-around;
 }
 
+.subcontainer {
+    display: flex;
+    flex-direction: column;
+    height: 40%;
+    justify-content: space-around;
+}
+
 h1 {
-    color: #333;
+    color: var(--text);
+    font-size: 100px;
 }
 
-input {
-    width: 80%;
-    padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-    font-size: 16px;
+h2 {
+    color: var(--text);
+    font-size: 35px;
+    padding-left: 50px;
 }
 
-button {
-    background-color: #4caf50;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
+.fade-in-now {
+    opacity: 0;
+    animation: fadeIn 2s ease-in-out forwards;
 }
 
-canvas {
+.fade-in {
+    opacity: 0;
+    animation: fadeIn 2s ease-in-out forwards;
+    animation-delay: 1s;
+}
+  
+.fade-in-later {
+    opacity: 0;
+    animation: fadeIn 2s ease-in-out forwards;
+    animation-delay: 2.5s;
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+
+/* Spotify logo */
+@keyframes scale-to-full {
+    0%, 1% {
+      transform: scale(0);
+    }
+    70%, 100% {
+      transform: scale(1);
+    }
+  }
+  @keyframes show-bars {
+    0%, 30% {
+      opacity: 0;
+      transform: scaley(0.78);
+    }
+    70%, 100% {
+      opacity: 1;
+      transform: scaley(1);
+    }
+  }
+  @keyframes dash {
+    0% {
+      fill-opacity: 0;
+      stroke-width: 1px;
+    }
+    37% {
+      fill-opacity: 0;
+    }
+    50% {
+      stroke-width: 1px;
+    }
+    100% {
+      fill-opacity: 1;
+      stroke-dashoffset: 0;
+      stroke-width: 0;
+    }
+  }
+
+  .logo-text {
+    color: var(--text);
+    margin-left: 240px;
+    margin-bottom: 0%;
+    font-size: 20px;
+    text-decoration: none;
+  }
+
+  #spotify--logo {
+    height: 80px;
+  }
+
+  #wrapper {
+    align-items: center;
+    display: flex;
+    height: 100vh;
+    justify-content: center;
+    width: 100vw;
+  }
+  #wrapper svg {
+    height: 80vh;
+    max-width: 90vw;
+    width: auto;
+  }
+  
+  #logo--circle {
+    animation: dash 4s forwards, scale-to-full 4s forwards;
+    fill: #1ED760;
+    stroke: #1ED760;
+    stroke-dasharray: 90;
+    stroke-dashoffset: 90;
+    transform-origin: 84px 50%;
+    transition: fill-opacity 0.3s ease, transform 0.1s ease;
+  }
+  #logo--circle .logo--circle--bar {
+    animation: show-bars 4s forwards;
+    fill: white;
+    opacity: 0;
+    transform: scaley(0.78);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  #logo--circle #logo--circle--bar-1 {
+    animation-delay: 0.25s;
+  }
+  #logo--circle #logo--circle--bar-2 {
+    animation-delay: 0.7s;
+  }
+  #logo--circle #logo--circle--bar-3 {
+    animation-delay: 1s;
+  }
+  
+  #logo--name path {
+    animation: dash 4s forwards;
+    fill: #1ED760;
+    stroke: #1ED760;
+    stroke-dasharray: 600;
+    stroke-dashoffset: 600;
+    transition: fill-opacity 0.3s ease;
+  }
+
+  /* Harmonic pendulum */
+  .swinger {
+    margin: 0 auto;
     position: absolute;
-}
+    height: 20px;
+    top: -200px;
+    right: 20%;
+    opacity: 50%;
+  }
+  
+  li {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    width: 1px;
+    height: 1px;
+    list-style: none;
+    animation: swing alternate infinite ease-in-out;
+  }
+  
+  .string {
+    display: block;
+    width: 1px;
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+  
+  .ball {
+    display: block;
+    width: 25px;
+    height: 25px;
+    -moz-border-radius: 30px;
+    -webkit-border-radius: 30px;
+    border-radius: 30px;
+    background: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4gPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHJhZGlhbEdyYWRpZW50IGlkPSJncmFkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgY3g9IjUwJSIgY3k9IjUwJSIgcj0iNzAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjYmJiNWM3Ii8+PHN0b3Agb2Zmc2V0PSI3MCUiIHN0b3AtY29sb3I9IiM3MzczNzQiLz48L3JhZGlhbEdyYWRpZW50PjwvZGVmcz48cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyYWQpIiAvPjwvc3ZnPiA=') -3px -5px;
+    background: -moz-radial-gradient(#bbb5c7, #737374 70%) -3px -5px;
+    background: -webkit-radial-gradient(#bbb5c7, #737374 70%) -3px -5px;
+    background: radial-gradient(#bbb5c7, #737374 70%) -3px -5px;
+    border: 1px solid #c8c8c8;
+    content: " ";
+    position: relative;
+    -moz-box-shadow: 0 2px 2px 1px rgba(0, 0, 0, 0.2), -2px -2px 4px 3px rgba(0, 0, 0, 0.1) inset;
+    -webkit-box-shadow: 0 2px 2px 1px rgba(0, 0, 0, 0.2), -2px -2px 4px 3px rgba(0, 0, 0, 0.1) inset;
+    box-shadow: 0 2px 2px 1px rgba(0, 0, 0, 0.2), -2px -2px 4px 3px rgba(0, 0, 0, 0.1) inset;
+  }
+  
+  @keyframes swing {
+    from {
+      -moz-transform: rotate(-25deg);
+      -ms-transform: rotate(-25deg);
+      -webkit-transform: rotate(-25deg);
+      transform: rotate(-25deg);
+    }
+    to {
+      -moz-transform: rotate(25deg);
+      -ms-transform: rotate(25deg);
+      -webkit-transform: rotate(25deg);
+      transform: rotate(25deg);
+    }
+  }
+  
