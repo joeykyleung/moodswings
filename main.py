@@ -107,7 +107,15 @@ def get_song_for_mood(mood):
     matching_tracks = []
 
     if mood == 'neutral':
-        track_response = requests.get(API_BASE_URL + f'recommendations?limit=5&seed_artists={artist_ids_str}&min_valence=0.4&max_valence=0.7', headers=headers)
+        params = {
+            'limit': 5,
+            'seed_artists': artist_ids_str,
+            'min_valence': 0.4,
+            'max_valence': 0.7
+        }
+
+        track_response = requests.get(API_BASE_URL + 'recommendations', headers=headers, params=params)
+        # track_response = requests.get(API_BASE_URL + f'recommendations?limit=5&seed_artists={artist_ids_str}&min_valence=0.4&max_valence=0.7', headers=headers)
         print(track_response)
         if track_response.status_code != 200:
             raise Exception("Failed to get recommendations")
