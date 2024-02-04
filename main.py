@@ -26,7 +26,6 @@ API_BASE_URL = 'https://api.spotify.com/v1/'
 # Global variable to store access token
 access_token = None
 
-
 @app.get('/', response_class=HTMLResponse)
 async def root(request: Request):
     return templates.TemplateResponse('index.html', {"request": request})
@@ -102,7 +101,7 @@ def get_song_for_mood(mood):
     for artist in top_artists:
         artist_id = artist['id']
         artist_ids.append(artist_id)
-    artist_ids_str = '%'.join(artist_ids)
+    artist_ids_str = ','.join(artist_ids)
 
     matching_tracks = []
 
@@ -116,7 +115,6 @@ def get_song_for_mood(mood):
 
         track_response = requests.get(API_BASE_URL + 'recommendations', headers=headers, params=params)
         # track_response = requests.get(API_BASE_URL + f'recommendations?limit=5&seed_artists={artist_ids_str}&min_valence=0.4&max_valence=0.7', headers=headers)
-        print(track_response)
         if track_response.status_code != 200:
             raise Exception("Failed to get recommendations")
         recommended = track_response.json()['tracks']
