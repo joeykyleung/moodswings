@@ -23,8 +23,25 @@
         </iframe>
             <div class="sub1">
                 <div id="log1">Detected expression: </div>
+                <div id="log2">Number of people: </div>
                 <div id="log"></div>
+                <div class="buttons">
+                    <button onclick="getData()">Refresh</button>
+                    <button onclick="goBack()" class="btn btn-primary">Back</button>
+                </div>
             </div>
-        
     </div>
+    <script>
+        function goBack() {
+          if (window.history && window.history.replaceState) {
+            // Use replaceState to go back without triggering form resubmission alert
+            window.history.replaceState(null, null, window.location.href);
+            // Navigate back one step
+            window.history.back();
+          } else {
+            // Fallback for browsers that do not support replaceState
+            window.history.back();
+          }
+        }
+      </script>
 {% endblock %}
