@@ -79,6 +79,7 @@ function getData() {
       mode: 'no-cors',
     })
       .then(response => {
+        iframe.src = iframe.src;
         if (response.ok) {
           return response.json();
         } else {
@@ -91,7 +92,6 @@ function getData() {
       .catch(error => {
         console.error('Error:', error);
       });
-      iframe.src = iframe.src;
       // Reset the frequency hashmap
       expressionFrequency.clear();
     }, 10000);

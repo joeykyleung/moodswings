@@ -27,6 +27,11 @@ p {
     width: 100px;
 }
 
+video {
+    align-self: flex-end;
+    justify-self: flex-end;
+}
+
 #log {
     width: 30vw;
     height: 80vh;
@@ -34,6 +39,8 @@ p {
     overflow: auto;
     border: 1px solid #ccc;
     padding: 10px;
+    display: flex;
+    flex-direction: column;
   }
 
 #log1, #log2{
