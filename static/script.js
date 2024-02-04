@@ -3,7 +3,8 @@ const serverUrl = 'http://localhost:8000';
 const textBox = document.getElementById('log');
 const textBox1 = document.getElementById('log1');
 const textBox2 = document.getElementById('log2');
-
+const iframe = document.getElementById('iframeid');
+        
 Promise.all([
   faceapi.nets.tinyFaceDetector.loadFromUri('/static/models'),
   faceapi.nets.faceLandmark68Net.loadFromUri('/static/models'),
@@ -22,11 +23,6 @@ function startVideo() {
 function appendText(text) {
   textBox.innerHTML += text + '<br>';
   textBox.scrollTop = textBox.scrollHeight;
-}
-
-function reloadIframe() {
-  var iframe = document.getElementById('iframeid');
-  iframe.contentDocument.location.reload(true);
 }
 
 video.addEventListener('play', getData);
@@ -84,8 +80,6 @@ function getData() {
     })
       .then(response => {
         if (response.ok) {
-          console.log('Hello')
-          reloadIframe();
           return response.json();
         } else {
           throw new Error('POST request failed');
@@ -97,8 +91,7 @@ function getData() {
       .catch(error => {
         console.error('Error:', error);
       });
-      console.log('Hello 2')
-      reloadIframe();
+      iframe.src = iframe.src;
       // Reset the frequency hashmap
       expressionFrequency.clear();
     }, 10000);
