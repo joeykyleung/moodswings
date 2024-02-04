@@ -191,7 +191,6 @@ async def get_song_for_mood(session, mood):
         params.update({
             'max_valence': 0.3,
             'max_energy': 0.45,
-            'max_loudness': -7,
             'max_tempo': 95
         })
     elif mood == 'surprised':
