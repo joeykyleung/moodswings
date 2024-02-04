@@ -178,32 +178,36 @@ async def get_song_for_mood(session, mood):
     elif mood == 'happy':
         params.update({
             'min_valence': 0.7,
-            'min_energy': 0.5,
+            'min_energy': 0.55,
             'min_danceability': 0.6
         })
     elif mood == 'sad':
         params.update({
-            'max_valence': 0.35,
-            'max_energy': 0.4,
-            'max_loudness': -7
+            'max_valence': 0.3,
+            'max_energy': 0.45,
+            'max_loudness': -7,
+            'max_tempo': 95
         })
     elif mood == 'surprised':
         params.update({
             'min_valence': 0.6,
             'max_valence': 0.8,
             'min_energy': 0.6,
+            'max_energy': 0.8,
             'max_danceability': 0.5
         })
     elif mood == 'fearful':
         params.update({
             'max_valence': 0.4,
-            'min_energy': 0.5
+            'min_energy': 0.5,
+            'max_mode': 0
         })
     elif mood == 'angry':
         params.update({
             'max_valence': 0.4,
             'min_energy': 0.6,
-            'min_loudness': -5
+            'min_loudness': -5,
+            'min_speechiness': 0.5
         })
     elif mood == 'disgusted':
         params.update({
