@@ -140,7 +140,8 @@ async def get_top_artists_and_genres(token):
     for index, item in enumerate(response):
         name = item['name']
         images_url = item['images'][0]['url']
-        top_artists[index] = {'name': name, 'image': images_url}
+        external_url = item['external_urls']['spotify']
+        top_artists[index] = {'name': name, 'image': images_url, 'external_url': external_url}
 
     top_genres = []
     genre_list = [genre['genres'] for genre in response]
