@@ -223,7 +223,7 @@ async def get_song_for_mood(session, mood):
 
     track_response = requests.get(API_BASE_URL + 'recommendations', headers=headers, params=params)
     if track_response.status_code != 200:
-        raise Exception("Failed to get recommendations")
+        raise Exception("Failed to get recommendations", track_response.status_code)
     recommended = track_response.json()['tracks']
     for track in recommended:
         track_uri = track['uri']
