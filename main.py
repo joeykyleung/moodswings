@@ -23,16 +23,6 @@ AUTH_URL = 'https://accounts.spotify.com/authorize'
 TOKEN_URL = 'https://accounts.spotify.com/api/token'
 API_BASE_URL = 'https://api.spotify.com/v1/'
 
-MOOD_FEATURES = {
-    "neutral": {"valence": (0.3, 0.7), "energy": (0.3, 0.7)},
-    "fearful": {"valence": (0, 0.4), "energy": (0.2, 0.6)},
-    "happy": {"valence": (0.7, 1.0), "energy": (0.7, 1.0)},
-    "sad": {"valence": (0, 0.3), "energy": (0, 0.3)},
-    "angry": {"valence": (0, 0.5), "energy": (0.7, 1.0)},
-    "disgusted": {"valence": (0, 0.4), "energy": (0.4, 0.7)},
-    "surprised": {"valence": (0.5, 1.0), "energy": (0.5, 1.0)}
-}
-
 # Global variable to store access token
 access_token = None
 
@@ -104,124 +94,68 @@ def get_song_for_mood(mood):
     }
 
     # Get user's top artists
-    response = requests.get(API_BASE_URL + 'me/top/artists', headers=headers)
+    response = requests.get(API_BASE_URL + 'me/top/artists?limit=5', headers=headers)
     if response.status_code != 200:
         raise Exception("Failed to get top artists")
     top_artists = response.json()['items']
-    
-    # Select a random artist
-    random_artist = random.choice(top_artists)
+    artist_ids = []
+    for artist in top_artists:
+        artist_id = artist['id']
+        artist_ids.append(artist_id)
+    artist_ids_str = '%'.join(artist_ids)
 
-    # Get top tracks of the selected artist
-    artist_id = random_artist['id']
-    response = requests.get(API_BASE_URL + f'artists/{artist_id}/top-tracks?country=US', headers=headers)
-    if response.status_code != 200:
-        raise Exception("Failed to get artist's top tracks")
-    top_tracks = response.json()['tracks']
-
-    # Filter tracks based on mood
     matching_tracks = []
 
-    for track in top_tracks:
-        track_id = track['id']
-        feature_response = requests.get(API_BASE_URL + f'audio-features/{track_id}', headers=headers)
-        if feature_response.status_code != 200:
-            raise Exception("Failed to get track audio features")
-        track_features = feature_response.json()
-        valence = track_features['valence']
-        energy = track_features['energy']
-        if mood == 'neutral' and 0.4 <= valence <= 0.7 and 0.4 <= energy <= 0.7:
+    if mood == 'neutral':
+        track_response = requests.get(API_BASE_URL + f'recommendations?limit=5&seed_artists={artist_ids_str}&min_valence=0.4&max_valence=0.7', headers=headers)
+        print(track_response)
+        if track_response.status_code != 200:
+            raise Exception("Failed to get recommendations")
+        recommended = track_response.json()['tracks']
+        for track in recommended:
+            track_id = track['id']
             matching_tracks.append(track_id)
-        elif mood == 'happy' and 0.6 <= valence <= 0.9 and 0.5 <= energy:
-            matching_tracks.append(track_id)
-        elif mood == 'sad' and 0.2<= valence <= 0.5 and energy <= 0.6:
-            matching_tracks.append(track_id)
-        elif mood == 'surprised' and 0.5 <= valence <= 0.8 and 0.6 <= energy:
-            matching_tracks.append(track_id)
-        elif mood == 'fearful' and 0.7 <= valence <= 1 and 0.5 <= energy:
-            matching_tracks.append(track_id)
-        elif mood == 'angry' and 0.7 <= valence <= 1 and 0.6 <= energy:
-            matching_tracks.append(track_id)
-        elif mood == 'disgusted' and 0.7 <= valence <= 1 and 0.5 <= energy:
+    elif mood == 'happy':
+        track_response = requests.get(API_BASE_URL + f'recommendations?limit=5&seed_artists={artist_ids_str}&min_valence=0.4&max_valence=0.7', headers=headers)
+        if track_response.status_code != 200:
+            raise Exception("Failed to get recommendations")
+        recommended = track_response.json()['tracks']
+        for track in recommended:
+            track_id = track['id']
             matching_tracks.append(track_id)
 
-    random_track = random.choice(matching_tracks)
-    print(random_track, mood)
-    return random_track
-
-    # # Select a random track - for now, mood is not used to filter tracks
-    # random_track = random.choice(top_tracks)
-    # print (random_track['id'])
-    # return random_track['id']
+    print(matching_tracks)
+    return matching_tracks
 
 
-# def select_tracks(mood: str) -> Optional[str]:
-#     global access_token
-#     if not access_token:
-#         raise Exception("Access token is not available")
-
-#     headers = {
-#         'Authorization': f'Bearer {access_token}'
-#     }
-
-#     try:
-#         # Get user's top artists
-#         response = requests.get(API_BASE_URL + 'me/top/artists', headers=headers)
-#         response.raise_for_status()
-#         top_artists = response.json()['items']
-
-#         # Select a random artist
-#         random_artist = random.choice(top_artists)
-
-#         # Get top tracks of the selected artist
-#         artist_id = random_artist['id']
-#         response = requests.get(f'{API_BASE_URL}artists/{artist_id}/top-tracks?country=US', headers=headers)
-#         response.raise_for_status()
-#         top_tracks = response.json()['tracks']
-
-#     except requests.RequestException as e:
-#         print(f"Failed to fetch data from Spotify: {e}")
-#         return None
-
-#     top_tracks_uri = [track['uri'] for track in top_tracks]
-
-#     # Select a track that matches the mood
-#     selected_track_uri = select_tracks(API_BASE_URL, headers, top_tracks_uri, mood)
-#     return selected_track_uri
-
-# def get_song_for_mood(api_url: str, headers: dict, top_tracks_uri: list, mood: str) -> Optional[str]:
-#     print("...selecting tracks")
-
-#     mood_features = MOOD_FEATURES.get(mood, {"valence": (0, 1), "energy": (0, 1)})
-#     valence_range = mood_features["valence"]
-#     energy_range = mood_features["energy"]
-
-#     matching_tracks = []
-
-#     for track_uri in top_tracks_uri:
-#         track_id = track_uri.split(":")[-1]
-#         try:
-#             response = requests.get(f"{api_url}audio-features/{track_id}", headers=headers)
-#             response.raise_for_status()
-
-#             track_features = response.json()
-#             if (valence_range[0] <= track_features["valence"] <= valence_range[1] and
-#                     energy_range[0] <= track_features["energy"] <= energy_range[1]):
-#                 matching_tracks.append(track_uri)
-
-#         except requests.RequestException:
-#             continue
-
-#     if matching_tracks:
-#         print ("mood: ", mood)
-#         track = random.choice(matching_tracks)
-#         print (track)
-#         return track
-#     else:
-#         # If no matching tracks, return a random track from the list
-#         return random.choice(top_tracks_uri) if top_tracks_uri else None
-
-
+    # for track in top_tracks:
+    #     track_id = track['id']
+    #     feature_response = requests.get(API_BASE_URL + f'audio-features/{track_id}', headers=headers)
+    #     print(feature_response)
+    #     if feature_response.status_code != 200:
+    #         raise Exception("Failed to get track audio features")
+    #     track_features = feature_response.json()
+    #     valence = track_features['valence']
+    #     energy = track_features['energy']
+    #     danceability = track_features['danceability']
+    #     loudness = track_features['loudness']
+    #     if mood == 'neutral' and 0.4 <= valence <= 0.7 and 0.4 <= energy <= 0.7 and 0.4 <= danceability <= 0.7:
+    #         matching_tracks.append(track_id)
+    #     elif mood == 'happy' and 0.7 <= valence and 0.5 <= energy <= 0.7 and 0.6 <= danceability:
+    #         matching_tracks.append(track_id)
+    #     elif mood == 'sad' and valence <= 0.35 and energy <= 0.4 and loudness <= -7 :
+    #         matching_tracks.append(track_id)
+    #     elif mood == 'surprised' and 0.6 <= valence <= 0.8 and 0.6 <= energy and danceability <=0.5 :
+    #         matching_tracks.append(track_id)
+    #     elif mood == 'fearful' and valence <= 0.4 and 0.5 <= energy:
+    #         matching_tracks.append(track_id)
+    #     elif mood == 'angry' and valence <= 0.4 and 0.6 <= energy and -5 <= loudness:
+    #         matching_tracks.append(track_id)
+    #     elif mood == 'disgusted' and valence <= 0.5 and 0.5 <= energy:
+    #         matching_tracks.append(track_id)
+    
+    # print(mood, matching_tracks)
+    # return matching_tracks
 
 
 
