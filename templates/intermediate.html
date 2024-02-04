@@ -18,7 +18,9 @@
         {% for artist in artists %}
         <li class="hs__item"> 
           <div class="hs__item__image__wrapper">
-            <img class="hs__item__image" src="{{ artists[artist]['image'] }}" alt=""/>
+            <a href="{{ artists[artist]['external_url'] }}">
+              <img class="hs__item__image" src="{{ artists[artist]['image'] }}" alt=""/>
+            </a>
           </div>
           <div class="hs__item__description"><span class="hs__item__title">{{ artists[artist]['name'] | capitalize }}</span><span class="hs__item__subtitle"></span></div>
         </li>
