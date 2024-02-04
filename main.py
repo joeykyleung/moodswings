@@ -26,6 +26,7 @@ API_BASE_URL = 'https://api.spotify.com/v1/'
 # Global variable to store access token
 access_token = None
 
+
 @app.get('/', response_class=HTMLResponse)
 async def root(request: Request):
     return templates.TemplateResponse('index.html', {"request": request})
@@ -105,30 +106,60 @@ def get_song_for_mood(mood):
 
     matching_tracks = []
 
+    params = {
+        'limit': 5,
+        'seed_artists': artist_ids_str,
+    }
     if mood == 'neutral':
-        params = {
-            'limit': 5,
-            'seed_artists': artist_ids_str,
+        params.update({
             'min_valence': 0.4,
             'max_valence': 0.7
-        }
-
-        track_response = requests.get(API_BASE_URL + 'recommendations', headers=headers, params=params)
-        # track_response = requests.get(API_BASE_URL + f'recommendations?limit=5&seed_artists={artist_ids_str}&min_valence=0.4&max_valence=0.7', headers=headers)
-        if track_response.status_code != 200:
-            raise Exception("Failed to get recommendations")
-        recommended = track_response.json()['tracks']
-        for track in recommended:
-            track_id = track['id']
-            matching_tracks.append(track_id)
+        })
     elif mood == 'happy':
-        track_response = requests.get(API_BASE_URL + f'recommendations?limit=5&seed_artists={artist_ids_str}&min_valence=0.4&max_valence=0.7', headers=headers)
-        if track_response.status_code != 200:
-            raise Exception("Failed to get recommendations")
-        recommended = track_response.json()['tracks']
-        for track in recommended:
-            track_id = track['id']
-            matching_tracks.append(track_id)
+        params.update({
+            'min_valence': 0.7,
+            'min_energy': 0.5,
+            'min_danceability': 0.6
+        })
+    elif mood == 'sad':
+        params.update({
+            'max_valence': 0.35,
+            'max_energy': 0.4,
+            'max_loudness': -7
+        })
+    elif mood == 'surprised':
+        params.update({
+            'min_valence': 0.6,
+            'max_valence': 0.8,
+            'min_energy': 0.6,
+            'max_danceability': 0.5
+        })
+    elif mood == 'fearful':
+        params.update({
+            'max_valence': 0.4,
+            'min_energy': 0.5
+        })
+    elif mood == 'angry':
+        params.update({
+            'max_valence': 0.4,
+            'min_energy': 0.6,
+            'min_loudness': -5
+        })
+    elif mood == 'disgusted':
+        params.update({
+            'max_valence': 0.5,
+            'min_energy': 0.5
+        })
+
+
+    track_response = requests.get(API_BASE_URL + 'recommendations', headers=headers, params=params)
+    print(track_response)
+    if track_response.status_code != 200:
+        raise Exception("Failed to get recommendations")
+    recommended = track_response.json()['tracks']
+    for track in recommended:
+        track_id = track['id']
+        matching_tracks.append(track_id)
 
     print(matching_tracks)
     return matching_tracks
