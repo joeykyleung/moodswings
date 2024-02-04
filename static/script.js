@@ -94,5 +94,5 @@ function getData() {
       });
       // Reset the frequency hashmap
       expressionFrequency.clear();
-    }, 10000);
+    }, 20000);
 }
