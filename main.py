@@ -113,7 +113,7 @@ async def get_spotify_id(token):
             return response.json()['id']
     except httpx.HTTPStatusError as e:
         # Handle HTTP errors
-        raise HTTPException(status_code=e.response.status_code, detail="Book not found")
+        raise HTTPException(status_code=e.response.status_code, detail="App in development. Please contact us to enroll in beta.")
     except httpx.RequestError:
         # Handle request errors (e.g., network issues)
         raise HTTPException(status_code=500, detail="Internal server error")

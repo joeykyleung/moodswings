@@ -28,17 +28,17 @@ function appendText(text) {
 video.addEventListener('play', getData);
 
 function getData() {
-  const canvas = faceapi.createCanvasFromMedia(video)
-  document.body.append(canvas)
-  const displaySize = { width: video.width, height: video.height }
-  faceapi.matchDimensions(canvas, displaySize)
+  const canvas = faceapi.createCanvasFromMedia(video);
+  document.body.append(canvas);
+  const displaySize = {width: 1, height: 1};//{width: video.width, height: video.height }
+  faceapi.matchDimensions(canvas, displaySize);
 
   const expressionFrequency = new Map(); // Create a hashmap to store expression frequency
 
   setInterval(async () => {
     const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceExpressions()
-    const resizedDetections = faceapi.resizeResults(detections, displaySize)
-    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
+    const resizedDetections = faceapi.resizeResults(detections, displaySize);
+    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
     // faceapi.draw.drawDetections(canvas, resizedDetections)
     // faceapi.draw.drawFaceLandmarks(canvas, resizedDetections)
     // faceapi.draw.drawFaceExpressions(canvas, resizedDetections)
@@ -94,5 +94,5 @@ function getData() {
       });
       // Reset the frequency hashmap
       expressionFrequency.clear();
-    }, 200000);
+    }, 10000);
 }
