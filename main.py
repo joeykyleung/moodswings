@@ -130,13 +130,19 @@ def get_song_for_mood(mood):
         track_features = feature_response.json()
         valence = track_features['valence']
         energy = track_features['energy']
-        if mood == 'neutral' and 0.4 <= valence <= 0.7:
+        if mood == 'neutral' and 0.4 <= valence <= 0.7 and 0.4 <= energy <= 0.7:
             matching_tracks.append(track_id)
-        elif mood == 'happy' and 0.6 <= valence <= 0.9:
+        elif mood == 'happy' and 0.6 <= valence <= 0.9 and 0.5 <= energy:
             matching_tracks.append(track_id)
-        elif mood == 'sad' and 0.2<= valence <= 0.5:
+        elif mood == 'sad' and 0.2<= valence <= 0.5 and energy <= 0.6:
             matching_tracks.append(track_id)
-        elif mood == 'surprised' and 0.5 <= valence <= 0.8:
+        elif mood == 'surprised' and 0.5 <= valence <= 0.8 and 0.6 <= energy:
+            matching_tracks.append(track_id)
+        elif mood == 'fearful' and 0.7 <= valence <= 1 and 0.5 <= energy:
+            matching_tracks.append(track_id)
+        elif mood == 'angry' and 0.7 <= valence <= 1 and 0.6 <= energy:
+            matching_tracks.append(track_id)
+        elif mood == 'disgusted' and 0.7 <= valence <= 1 and 0.5 <= energy:
             matching_tracks.append(track_id)
 
     random_track = random.choice(matching_tracks)
