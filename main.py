@@ -173,7 +173,7 @@ async def get_song_for_mood(session, mood):
     matching_tracks = []
 
     params = {
-        'limit': 5,
+        'limit': 10,
         'seed_artists': artist_ids_str,
     }
     if mood == 'neutral':
