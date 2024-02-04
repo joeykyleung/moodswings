@@ -2,6 +2,7 @@ const video = document.getElementById('video')
 const serverUrl = 'http://localhost:8000';
 const textBox = document.getElementById('log');
 const textBox1 = document.getElementById('log1');
+const textBox2 = document.getElementById('log2');
 
 Promise.all([
   faceapi.nets.tinyFaceDetector.loadFromUri('/static/models'),
@@ -20,11 +21,12 @@ function startVideo() {
 
 function appendText(text) {
   textBox.innerHTML += text + '<br>';
-  // Optionally, you can also scroll to the bottom after appending
   textBox.scrollTop = textBox.scrollHeight;
 }
 
-video.addEventListener('play', () => {
+video.addEventListener('play', getData);
+
+function getData() {
   const canvas = faceapi.createCanvasFromMedia(video)
   document.body.append(canvas)
   const displaySize = { width: video.width, height: video.height }
@@ -44,6 +46,7 @@ video.addEventListener('play', () => {
     if (resizedDetections && resizedDetections.length > 0) {
       const expression = resizedDetections[0].expressions.asSortedArray()[0]
       textBox1.innerHTML = 'Detected expression: ' + expression.expression;
+      textBox2.innerHTML = 'Number of people: ' + detections.length;
       console.log('Detected expression:', expression.expression)
       console.log('people', detections.length);
       const currentFrequency = expressionFrequency.get(expression.expression) || 0;
@@ -56,7 +59,7 @@ video.addEventListener('play', () => {
     let highestFrequency = 0;
     let highestExpression = '';
     for (const [expression, frequency] of expressionFrequency) {
-      if (frequency > highestFrequency) {
+      if (frequency > highestFrequency && expression !== 'neutral') {
         highestFrequency = frequency;
         highestExpression = expression;
       }
@@ -89,5 +92,5 @@ video.addEventListener('play', () => {
       });
       // Reset the frequency hashmap
       expressionFrequency.clear();
-    }, 10000);
-})
+    }, 1000000);
+}
