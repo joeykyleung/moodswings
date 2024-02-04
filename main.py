@@ -157,8 +157,8 @@ def get_song_for_mood(mood):
         raise Exception("Failed to get recommendations")
     recommended = track_response.json()['tracks']
     for track in recommended:
-        track_id = track['id']
-        matching_tracks.append(track_id)
+        track_uri = track['uri']
+        matching_tracks.append(track_uri)
 
     print(matching_tracks)
     return matching_tracks
