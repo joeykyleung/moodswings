@@ -9,7 +9,6 @@
 {% block title %}MoodSwings{% endblock %} 
 
 {% block body %}
-<video id="video" width="100" height="100" autoplay muted></video>
     <div class="container">
             <iframe
             id="iframeid"
@@ -25,6 +24,7 @@
                 <div id="log1">Detected expression: </div>
                 <div id="log2">Number of people: </div>
                 <div id="log">Detecting...<br></div>
+                <video id="video" width="100" height="100" autoplay muted></video>
                 <div class="buttons">
                     <button onclick="self.location.reload();">Refresh</button>
                     <button onclick="goBack()" class="btn btn-primary">Back</button>
