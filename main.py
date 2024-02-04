@@ -71,10 +71,13 @@ async def callback(request: Request):
 
 @app.get('/intermediate', response_class=HTMLResponse)
 async def intermediate(request: Request):
+    if 'access_token' not in session:
+        return RedirectResponse('/')
     artists, genres = await get_top_artists_and_genres(session['access_token'])
+    print(artists)
     return templates.TemplateResponse("intermediate.html", {"request": request, 
-                                                            "artists": artists[:10], 
-                                                            "genres": genres[:10]})
+                                                            "artists": artists, 
+                                                            "genres": genres})
 
 
 @app.get('/face-rec', response_class=HTMLResponse)
@@ -119,9 +122,13 @@ async def get_top_artists_and_genres(token):
     except httpx.RequestError:
         raise HTTPException(status_code=500, detail="Internal server error")
 
-    response = response.json()['items']
-
-    top_artists = [artist['name'] for artist in response]
+    response = response.json()['items'][:10]
+    
+    top_artists = {}
+    for index, item in enumerate(response):
+        name = item['name']
+        images_url = item['images'][0]['url']
+        top_artists[index] = {'name': name, 'image': images_url}
 
     top_genres = []
     genre_list = [genre['genres'] for genre in response]
