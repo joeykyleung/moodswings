@@ -24,6 +24,11 @@ function appendText(text) {
   textBox.scrollTop = textBox.scrollHeight;
 }
 
+function reloadIframe() {
+  var iframe = document.getElementById('iframeid');
+  iframe.contentWindow.location.reload();
+}
+
 video.addEventListener('play', () => {
   const canvas = faceapi.createCanvasFromMedia(video)
   document.body.append(canvas)
@@ -76,6 +81,7 @@ video.addEventListener('play', () => {
     })
       .then(response => {
         if (response.ok) {
+          reloadIframe();
           return response.json();
         } else {
           throw new Error('POST request failed');
