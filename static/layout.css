@@ -21,6 +21,7 @@ body {
   right: 30px;
   height: 5%;
   cursor: pointer;
+  z-index: 10;
 }
 
 .side-panel {
