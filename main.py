@@ -1,3 +1,8 @@
+"""
+MoodSwings - A FastAPI application that generates Spotify playlists based on emotional state.
+This module handles the main application logic, including OAuth flow, API endpoints, and mood-based song selection.
+"""
+
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -10,13 +15,15 @@ import os
 from dotenv import load_dotenv
 from playlistHandler import playlistHandler
 
+# Initialize FastAPI app and configure templates
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-load_dotenv()  # Load variables from .env file
+load_dotenv()  # Load environment variables from .env file
 session = {}
 
+# Spotify API credentials and endpoints
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 CLIENT_ID = os.getenv('CLIENT_ID')
 REDIRECT_URI = os.environ.get('REDIRECT_URI', 'http://127.0.0.1:8000/callback')
@@ -50,12 +57,15 @@ async def login(request: Request):
 
 @app.get('/callback')
 async def callback(request: Request):
-
+    """
+    Handle Spotify OAuth callback.
+    Exchanges authorization code for access token and stores it in session.
+    """
     if 'error' in request.query_params:
         return jsonify({"error": request.query_params['error']})
 
     if 'code' in request.query_params:
-        # get access token
+        # Exchange authorization code for access token
         req_body = {
             'code': request.query_params['code'],
             'grant_type': 'authorization_code',
@@ -152,6 +162,22 @@ async def get_top_artists_and_genres(token):
 
 
 async def get_song_for_mood(session, mood):
+    """
+    Get song recommendations based on user's mood and top artists.
+    
+    Args:
+        session: Current user session containing access token
+        mood: Detected emotional state (happy, sad, angry, etc.)
+    
+    Returns:
+        list: List of Spotify track URIs matching the mood
+    
+    The function uses Spotify's audio features to match songs with emotional states:
+    - Valence: Represents musical positiveness
+    - Energy: Represents intensity and activity
+    - Danceability: How suitable for dancing
+    - Tempo: Overall tempo of the track
+    """
     if 'access_token' not in session:
         return RedirectResponse('/')
 
@@ -159,39 +185,39 @@ async def get_song_for_mood(session, mood):
         'Authorization': f"Bearer {session['access_token']}"
     }
 
-    # Get user's top artists
+    # Get user's top 5 artists for personalized recommendations
     response = requests.get(API_BASE_URL + 'me/top/artists?limit=5', headers=headers)
     if response.status_code != 200:
         raise Exception("Failed to get top artists")
     top_artists = response.json()['items']
-    artist_ids = []
-    for artist in top_artists:
-        artist_id = artist['id']
-        artist_ids.append(artist_id)
+    artist_ids = [artist['id'] for artist in top_artists]
     artist_ids_str = ','.join(artist_ids)
 
     matching_tracks = []
 
+    # Base parameters for recommendations
     params = {
         'limit': 10,
         'seed_artists': artist_ids_str,
     }
+
+    # Adjust audio features based on emotional state
     if mood == 'neutral':
         params.update({
             'min_valence': 0.4,
-            'max_valence': 0.7
+            'max_valence': 0.7  # Balanced emotional tone
         })
     elif mood == 'happy':
         params.update({
-            'min_valence': 0.7,
-            'min_energy': 0.55,
-            'min_danceability': 0.6
+            'min_valence': 0.7,  # High positiveness
+            'min_energy': 0.55,  # Energetic
+            'min_danceability': 0.6  # Danceable
         })
     elif mood == 'sad':
         params.update({
-            'max_valence': 0.3,
-            'max_energy': 0.45,
-            'max_tempo': 95
+            'max_valence': 0.3,  # Low positiveness
+            'max_energy': 0.45,  # Low energy
+            'max_tempo': 95  # Slower tempo
         })
     elif mood == 'surprised':
         params.update({
@@ -219,14 +245,12 @@ async def get_song_for_mood(session, mood):
             'min_energy': 0.5
         })
 
-
+    # Get track recommendations based on mood parameters
     track_response = requests.get(API_BASE_URL + 'recommendations', headers=headers, params=params)
     if track_response.status_code != 200:
         raise Exception("Failed to get recommendations", track_response.status_code)
     recommended = track_response.json()['tracks']
-    for track in recommended:
-        track_uri = track['uri']
-        matching_tracks.append(track_uri)
-
-    print(matching_tracks)
+    
+    # Extract track URIs for playlist addition
+    matching_tracks = [track['uri'] for track in recommended]
     return matching_tracks
